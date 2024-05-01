@@ -46,7 +46,10 @@ export const getInformationObjects = async (pagina: string, componente: string):
                         component: imagesData[key].component,
                         name: imagesData[key].name,
                         path: imagesData[key].path,
-                        url: null  // Inicialmente, url es null hasta que se actualice con la URL real
+                        url: null,  // Inicialmente, url es null hasta que se actualice con la URL real
+                        title: imagesData[key].title,
+                        date: imagesData[key].date,
+                        description: imagesData[key].description
                     });
                 }
             });

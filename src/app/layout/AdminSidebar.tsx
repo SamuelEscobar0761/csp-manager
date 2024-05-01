@@ -33,13 +33,13 @@ const AdminSidebar = ({ setPage, setComponent }: {setPage: any, setComponent: an
       <NavbarItem title="Deportes">
         {/* Similar sub-items for each sport */}
         <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("swimming_page");setComponent("information")}}>Natación</div>
-        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("sports_page");setComponent("tennis")}}>Tenis</div>
-        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("sports_page");setComponent("racket")}}>Racquet</div>
-        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("sports_page");setComponent("padding")}}>Paleta</div>
-        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("sports_page");setComponent("football")}}>Fútbol</div>
-        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("sports_page");setComponent("gym")}}>Gimnasio</div>
-        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("sports_page");setComponent("cycling")}}>Ciclismo</div>
-        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("sports_page");setComponent("wally")}}>Wally</div>
+        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("tennis_page");setComponent("information")}}>Tenis</div>
+        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("racket_page");setComponent("information")}}>Racquet</div>
+        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("paddle_page");setComponent("information")}}>Paleta</div>
+        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("football_page");setComponent("information")}}>Fútbol</div>
+        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("gym_page");setComponent("information")}}>Gimnasio</div>
+        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("cycling_page");setComponent("information")}}>Ciclismo</div>
+        <div className="py-2 px-4 hover:bg-gray-600" onClick={()=>{setPage("wally_page");setComponent("information")}}>Wally</div>
         {/* Add more sports here */}
       </NavbarItem>
       <NavbarItem title="Restaurante y Snack">
