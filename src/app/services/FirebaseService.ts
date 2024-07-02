@@ -1,7 +1,18 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, get } from "firebase/database";
-import {getStorage, ref as refStorage, getDownloadURL} from "firebase/storage";
+import { getDatabase, ref as dbRef, get, push, set } from "firebase/database";
+import {getStorage, ref as refStorage, uploadBytes, getDownloadURL} from "firebase/storage";
 import InformationObject from '../interfaces/InformationObject';
+
+interface UploadResponse {
+  success: boolean;
+  message: string;
+  data?: {
+      name: string;
+      page: string;
+      component: string;
+      path: string;
+  };
+}
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -32,7 +43,7 @@ export const getUrl = async (path: string): Promise<string | null> => {
 };
 
 export const getInformationObjects = async (pagina: string, componente: string): Promise<InformationObject[]> => {
-    const imagenesRef = ref(db, 'images');  // Asegúrate de que el path 'images' es correcto según tu base de datos
+    const imagenesRef = dbRef(db, 'images');  // Asegúrate de que el path 'images' es correcto según tu base de datos
     try {
         const snapshot = await get(imagenesRef);
         const imagesData = snapshot.val();
@@ -59,9 +70,45 @@ export const getInformationObjects = async (pagina: string, componente: string):
     }
 };
 
-const addInformationObject = () => {
+/**
+ * Función para agregar un objeto de información y subir una imagen a Firebase.
+ * @param imageFile - Archivo de imagen para subir.
+ * @param component - Componente al cual pertenece la imagen.
+ * @param name - Nombre de la imagen.
+ * @param page - Página a la que pertenece la imagen.
+ * @returns Promise<UploadResponse>
+ */
+export const addInformationObject = async (
+  imageFile: File, 
+  component: string, 
+  name: string, 
+  page: string
+): Promise<UploadResponse> => {
+  const timestamp = new Date().getTime();
+  const storagePath = `images/${page}/${component}/${timestamp}_${imageFile.name}`;
 
-}
+  try {
+    // Referencia al lugar donde se guardará la imagen en Storage
+    const storageRef = refStorage(storage, storagePath);
+    
+    // Subir imagen a Firebase Storage
+    await uploadBytes(storageRef, imageFile);
+
+    // Crear un nuevo nodo en la database para guardar los detalles
+    const newInfoRef = push(dbRef(db, 'images'));
+    await set(newInfoRef, {
+        component: component,
+        name: name,
+        page: page,
+        path: storagePath  // Guardar el path de Storage para referencia futura
+    });
+
+    return { success: true, message: "Imagen y datos subidos correctamente", data: { name, page, component, path: storagePath } };
+  } catch (error) {
+    console.error('Error al subir imagen y datos:', error);
+    return { success: false, message: 'Error al subir imagen y datos' };
+  }
+};
 
 const editInformationObject = () => {
 
