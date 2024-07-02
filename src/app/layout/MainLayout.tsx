@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { getInformationObjects, getUrl } from "../services/FirebaseService";
-import Image from '../interfaces/Image';
+import InformationObject from '../interfaces/InformationObject';
 import InformationCard from "../components/InformationCard";
 
 export const MainLayout = ({page, component}: {page: string, component: string}) => {
-    const [informationObjects, setInformationObjects] = useState<Image[]>([]);
+    const [informationObjects, setInformationObjects] = useState<InformationObject[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
@@ -39,24 +39,25 @@ export const MainLayout = ({page, component}: {page: string, component: string})
             </div>
         )
     }
-    return(
-        <div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {informationObjects.map((item, index) => (
-                    <InformationCard 
-                        name={item.name} 
-                        imageUrl={item.url!}
-                        onDelete={()=>{}} 
-                        onEdit={()=>{}} 
-                        key={index}
-                    />
-                ))}
+    if(page != "about_us_page" && page != "news"){
+        return(
+            <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {informationObjects.map((item, index) => (
+                        <InformationCard
+                            imageUrl={item.url!}
+                            onDelete={()=>{}} 
+                            onEdit={()=>{}} 
+                            key={index}
+                        />
+                    ))}
+                </div>
+                <div id="add_button">
+                <button className="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                <span className="text-xl">+</span>
+                </button>
+                </div>
             </div>
-            <div id="add_button">
-            <button className="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-            <span className="text-xl">+</span>
-            </button>
-            </div>
-        </div>
-    );
+        );
+    }
 }

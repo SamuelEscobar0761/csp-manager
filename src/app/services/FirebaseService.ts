@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import {getStorage, ref as refStorage, getDownloadURL} from "firebase/storage";
-import Image from '../interfaces/Image';
+import InformationObject from '../interfaces/InformationObject';
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -31,25 +31,23 @@ export const getUrl = async (path: string): Promise<string | null> => {
   }
 };
 
-export const getInformationObjects = async (pagina: string, componente: string): Promise<Image[]> => {
+export const getInformationObjects = async (pagina: string, componente: string): Promise<InformationObject[]> => {
     const imagenesRef = ref(db, 'images');  // Asegúrate de que el path 'images' es correcto según tu base de datos
     try {
         const snapshot = await get(imagenesRef);
         const imagesData = snapshot.val();
-        let images: Image[] = [];
+        let images: InformationObject[] = [];
         if (imagesData) {
             // Filtrar por 'page' y extraer los datos completos que cumplen con la interfaz Image
             Object.keys(imagesData).forEach(key => {
                 if (imagesData[key].page === pagina && imagesData[key].component === componente) {
                     images.push({
+                        key: key,
                         page: imagesData[key].page,
                         component: imagesData[key].component,
                         name: imagesData[key].name,
                         path: imagesData[key].path,
                         url: null,  // Inicialmente, url es null hasta que se actualice con la URL real
-                        title: imagesData[key].title,
-                        date: imagesData[key].date,
-                        description: imagesData[key].description
                     });
                 }
             });
@@ -61,10 +59,14 @@ export const getInformationObjects = async (pagina: string, componente: string):
     }
 };
 
-const editObject = () => {
+const addInformationObject = () => {
 
 }
 
-const deleteObject = () => {
+const editInformationObject = () => {
+
+}
+
+const deleteInformationObject = () => {
 
 }
