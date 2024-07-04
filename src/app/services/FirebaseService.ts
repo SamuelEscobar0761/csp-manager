@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref as dbRef, get, push, set } from "firebase/database";
-import {getStorage, ref as refStorage, uploadBytes, getDownloadURL} from "firebase/storage";
+import { getDatabase, ref as dbRef, get, push, set, remove, update } from "firebase/database";
+import {getStorage, ref as refStorage, uploadBytes, getDownloadURL, deleteObject} from "firebase/storage";
 import InformationObject from '../interfaces/InformationObject';
 
 interface UploadResponse {
@@ -31,17 +31,6 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const storage = getStorage();
 
-export const getUrl = async (path: string): Promise<string | null> => {
-  try {
-    const fileRef = refStorage(storage, path);
-    const downloadUrl = await getDownloadURL(fileRef);
-    return downloadUrl;  // Esto ahora devuelve la URL de descarga directa
-  } catch (error) {
-    console.error('Error al obtener la URL del file', error);
-    return null;
-  }
-};
-
 export const getInformationObjects = async (pagina: string, componente: string): Promise<InformationObject[]> => {
     const imagenesRef = dbRef(db, 'images');  // Asegúrate de que el path 'images' es correcto según tu base de datos
     try {
@@ -58,7 +47,7 @@ export const getInformationObjects = async (pagina: string, componente: string):
                         component: imagesData[key].component,
                         name: imagesData[key].name,
                         path: imagesData[key].path,
-                        url: null,  // Inicialmente, url es null hasta que se actualice con la URL real
+                        url: imagesData[key].url,  // Inicialmente, url es null hasta que se actualice con la URL real
                     });
                 }
             });
@@ -92,7 +81,8 @@ export const addInformationObject = async (
     const storageRef = refStorage(storage, storagePath);
     
     // Subir imagen a Firebase Storage
-    await uploadBytes(storageRef, imageFile);
+    const snapshot = await uploadBytes(storageRef, imageFile);
+    const downloadURL = await getDownloadURL(snapshot.ref);
 
     // Crear un nuevo nodo en la database para guardar los detalles
     const newInfoRef = push(dbRef(db, 'images'));
@@ -100,7 +90,8 @@ export const addInformationObject = async (
         component: component,
         name: name,
         page: page,
-        path: storagePath  // Guardar el path de Storage para referencia futura
+        path: storagePath,  // Guardar el path de Storage para referencia futura
+        url: downloadURL   // Guardar también la URL de descarga directa de la imagen
     });
 
     return { success: true, message: "Imagen y datos subidos correctamente", data: { name, page, component, path: storagePath } };
@@ -114,6 +105,60 @@ const editInformationObject = () => {
 
 }
 
-const deleteInformationObject = () => {
+type UpdatePaths = {
+  [key: string]: string;  // Permite cualquier clave de string con valores de string
+};
 
-}
+// Función para actualizar las URLs de todas las imágenes
+export const updateImageUrls = async () => {
+  const imagesRef = dbRef(db, 'images');
+  try {
+      const snapshot = await get(imagesRef);
+      if (snapshot.exists()) {
+          const imagesData = snapshot.val();
+          const updates: UpdatePaths = {};
+          for (const key in imagesData) {
+              const imagePath = imagesData[key].path;
+              const url = await getDownloadURL(refStorage(storage, imagePath));
+              updates[`/${key}/url`] = url;  // Asumiendo que cada imagen está bajo 'images/{key}'
+          }
+          await update(imagesRef, updates);
+          console.log('URLs actualizadas correctamente.');
+      } else {
+          console.log('No hay imágenes para actualizar.');
+      }
+  } catch (error) {
+      console.error('Error al actualizar URLs:', error);
+  }
+};
+
+/**
+ * Función para eliminar un objeto de información y su imagen asociada en Firebase.
+ * @param key - La clave del objeto en la base de datos que también indica el archivo en el storage.
+ * @returns Promise que se resuelve con true si la eliminación fue exitosa o con un mensaje de error si falla.
+ */
+export const deleteInformationObject = async (key: string): Promise<{success: boolean, message?:string}> => {
+  try {
+      // Referencia al nodo específico en la base de datos
+      const dbPath = dbRef(db, `images/${key}`);
+      // Obtener el path del archivo en el storage antes de eliminarlo de la base de datos
+      const snapshot = await get(dbPath);
+      if (snapshot.exists()) {
+          const data = snapshot.val();
+          // Referencia al archivo en el storage
+          const storagePath = refStorage(storage, data.path);
+
+          // Eliminar archivo de Firebase Storage
+          await deleteObject(storagePath);
+          // Eliminar nodo de la base de datos
+          await remove(dbPath);
+
+          return { success: true, message: "Imagen eliminada correctamente" };
+      } else {
+          return { success: false, message: "No existe el objeto con la clave proporcionada, por favor comuniquese con el desarrollador Samuel Escobar" };
+      }
+  } catch (error: any) {
+      console.error('Error al eliminar el objeto de información:', error);
+      return { success: false, message: error.message || "Error al eliminar la imagen" };
+  }
+};

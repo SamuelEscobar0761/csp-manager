@@ -1,8 +1,9 @@
 // Props esperadas: imagePath, onEdit, onDelete
-const InformationCard = ({ imageUrl, onEdit, onDelete }: {imageUrl: string, onEdit: any, onDelete: any}) => {
+const InformationCard = ({ imageKey, imageUrl, onEdit, onDelete }: {imageKey: string, imageUrl: string, onEdit: any, onDelete: any}) => {
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-2">
       <img className="w-full" src={imageUrl} />
+      <p>{imageKey}</p>
       <div className="px-6 pt-4 pb-2 flex justify-between">
         <button 
           onClick={onEdit()}
@@ -11,7 +12,7 @@ const InformationCard = ({ imageUrl, onEdit, onDelete }: {imageUrl: string, onEd
           Edit
         </button>
         <button 
-          onClick={onDelete()}
+          onClick={() => onDelete(imageKey)}
           className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
         >
           Delete
