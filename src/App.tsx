@@ -1,6 +1,6 @@
-import { BrowserRouter as Router } from 'react-router-dom';
-import AdminSidebar from './app/layout/AdminSidebar';
-import { MainLayout } from './app/layout/MainLayout';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import AdminSidebar from './app/components/AdminSidebar';
+import { MainLayout } from './app/pages/MainLayout';
 import { useState } from 'react';
 
 function App() {
@@ -11,9 +11,9 @@ function App() {
     <Router>
       <div className='flex min-h-screen'>
         <AdminSidebar setPage={setPage} setComponent={setComponent} />
-        <div className='flex-grow'>
-          <MainLayout page={page} component={component} />
-        </div>
+        <Routes>
+          <Route path="/" element={ <MainLayout page={page} component={component}/> } />
+        </Routes>
       </div>
     </Router>
   );

@@ -103,7 +103,7 @@ const cancelDelete = () => {
     }
 
     return (
-        <div>
+        <div className='flex-grow'>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {informationObjects.map((item, index) => (
                     <InformationCard
@@ -147,12 +147,12 @@ const cancelDelete = () => {
             {editDialog.show && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                     <div className="bg-white p-4 rounded-lg space-y-4">
-                        <p className="text-center text-lg font-semibold">You are about to edit the image {editDialog.imageName}. You can change the image or its name. This action can be undone.</p>
+                        <p className="text-left text-lg font-semibold">Estás a punto de editar la imágen de "{editDialog.imageName}".<br/>¿Estás seguro de guardar los cambios? La acción no podrá deshacerse.</p>
                         <input type="file" onChange={handleFileChange} accept="image/png, image/jpeg" />
-                        <input type="text" value={imageName} onChange={(e) => setImageName(e.target.value)} className="p-2 border rounded" placeholder="New image name" />
+                        <input type="text" value={imageName} onChange={(e) => setImageName(e.target.value)} className="p-2 border rounded" placeholder="nombre" />
                         <div className="flex justify-around">
-                            <button onClick={handleEditSubmit} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save and Replace</button>
-                            <button onClick={cancelEdit} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancel</button>
+                            <button onClick={handleEditSubmit} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Guardar y remplazar</button>
+                            <button onClick={cancelEdit} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
                         </div>
                     </div>
                 </div>
