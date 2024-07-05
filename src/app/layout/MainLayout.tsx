@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { getInformationObjects, addInformationObject, deleteInformationObject } from "../services/FirebaseService";
+import { getInformationObjects, addInformationObject, deleteInformationObject, editInformationObject } from "../services/FirebaseService";
 import InformationObject from '../interfaces/InformationObject';
 import InformationCard from "../components/InformationCard";
 
@@ -7,13 +7,37 @@ export const MainLayout = ({ page, component }: { page: string, component: strin
     const [informationObjects, setInformationObjects] = useState<InformationObject[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [showDialog, setShowDialog] = useState<boolean>(false);
+    const [editDialog, setEditDialog] = useState<{ show: boolean, imageKey?: string, imageName?: string }>({ show: false });
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imageName, setImageName] = useState<string>("");
     const [confirmDelete, setConfirmDelete] = useState<{ show: boolean, imageKey?: string, imageName?: string }>({ show: false });
 
+    const handleEditClick = (imageKey: string, imageName: string) => {
+        setImageName(imageName); // Set the current name in the input field
+        setEditDialog({ show: true, imageKey, imageName });
+    };
+
+    const handleEditSubmit = async () => {
+        if (editDialog.imageKey) {
+            const response = await editInformationObject(editDialog.imageKey, imageFile, imageName);
+            if (response.success) {
+                setEditDialog({ show: false });
+                await loadImages(); // Reload the images to reflect the changes
+            } else {
+                alert('Failed to update the image');
+            }
+        }
+    };
+
+    const cancelEdit = () => {
+        setEditDialog({ show: false });
+        setImageFile(null);
+        setImageName(""); // Reset the name input field
+    };
+
     const handleDeleteClick = (imageKey: string, imageName: string) => {
         setConfirmDelete({ show: true, imageKey, imageName });
-    };    
+    };
 
     const deleteImage = async () => {
     if (confirmDelete.imageKey) {
@@ -83,17 +107,22 @@ const cancelDelete = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {informationObjects.map((item, index) => (
                     <InformationCard
-                        imageKey={item.key}
+                        imageName={item.name}
                         imageUrl={item.url!}
-                        onEdit={() => { }}
+                        disableDeleteButton={page === "about_us_page" && component === "directory"}
+                        newsView={page==="news" && component==="news"}
+                        onEdit={() => handleEditClick(item.key, item.name)}
                         onDelete={() => handleDeleteClick(item.key, item.name)}
                         key={index}
                     />
                 ))}
             </div>
-            <button onClick={handleAddButtonClick} className="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                <span className="text-xl">+</span>
-            </button>
+            {page != "about_us_page" && component != "directory" &&(
+                <button onClick={handleAddButtonClick} className="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    <span className="text-xl">+</span>
+                </button>
+            )}
+            
             {confirmDelete.show && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                     <div className="bg-white p-4 rounded-lg space-y-4">
@@ -113,6 +142,19 @@ const cancelDelete = () => {
                         <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Guardar</button>
                         <button type="button" onClick={() => setShowDialog(false)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
                     </form>
+                </div>
+            )}
+            {editDialog.show && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+                    <div className="bg-white p-4 rounded-lg space-y-4">
+                        <p className="text-center text-lg font-semibold">You are about to edit the image {editDialog.imageName}. You can change the image or its name. This action can be undone.</p>
+                        <input type="file" onChange={handleFileChange} accept="image/png, image/jpeg" />
+                        <input type="text" value={imageName} onChange={(e) => setImageName(e.target.value)} className="p-2 border rounded" placeholder="New image name" />
+                        <div className="flex justify-around">
+                            <button onClick={handleEditSubmit} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save and Replace</button>
+                            <button onClick={cancelEdit} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancel</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

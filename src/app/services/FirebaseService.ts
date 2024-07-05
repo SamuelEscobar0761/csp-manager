@@ -14,6 +14,12 @@ interface UploadResponse {
   };
 }
 
+interface UpdateData {
+    name?: string;
+    path?: string;
+    url?: string;
+}
+
 // Configuración de Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCiXm7xzyou9GySZ7Y7x1tmm6CYs-BBars",
@@ -101,9 +107,49 @@ export const addInformationObject = async (
   }
 };
 
-const editInformationObject = () => {
-
-}
+export const editInformationObject = async (
+    key: string, 
+    newImageFile: File | null, 
+    newName: string
+  ): Promise<{ success: boolean; message: string }> => {
+    try {
+      const infoRef = dbRef(db, `images/${key}`);
+      const snapshot = await get(infoRef);
+      if (snapshot.exists()) {
+        const imageData = snapshot.val() as { name: string, path: string, url: string, page: string, component: string };
+  
+        let updates: UpdateData = {};
+        if (newImageFile) {
+          // Si hay un nuevo archivo de imagen, subirlo y actualizar la URL y path
+          const newImagePath = `images/${imageData.page}/${imageData.component}/${Date.now()}_${newImageFile.name}`;
+          const imageStorageRef = refStorage(storage, newImagePath);
+          const uploadResult = await uploadBytes(imageStorageRef, newImageFile);
+          const newImageUrl = await getDownloadURL(uploadResult.ref);
+  
+          // Actualizar path y url en el objeto de actualizaciones
+          updates.path = newImagePath;
+          updates.url = newImageUrl;
+        }
+  
+        // Verificar si el nombre ha cambiado y actualizarlo si es necesario
+        if (newName !== imageData.name) {
+          updates.name = newName;
+        }
+  
+        // Solo llamar a update si realmente hay algo que actualizar
+        if (Object.keys(updates).length > 0) {
+          await update(infoRef, updates);
+        }
+  
+        return { success: true, message: "Información actualizada correctamente." };
+      } else {
+        return { success: false, message: "No se encontró el objeto de información." };
+      }
+    } catch (error) {
+      console.error('Error al editar el objeto de información:', error);
+      return { success: false, message: 'Error al editar el objeto de información' };
+    }
+  };
 
 type UpdatePaths = {
   [key: string]: string;  // Permite cualquier clave de string con valores de string
