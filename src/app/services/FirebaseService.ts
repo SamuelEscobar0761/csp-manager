@@ -37,8 +37,8 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const storage = getStorage();
 
-export const getInformationObjects = async (pagina: string, componente: string): Promise<InformationObject[]> => {
-    const imagenesRef = dbRef(db, 'images');  // Asegúrate de que el path 'images' es correcto según tu base de datos
+export const getInformationObjects = async (type: 'images' | 'pdfs', pagina: string, componente: string): Promise<InformationObject[]> => {
+    const imagenesRef = dbRef(db, type);  // Asegúrate de que el path 'images' es correcto según tu base de datos
     try {
         const snapshot = await get(imagenesRef);
         const imagesData = snapshot.val();
@@ -74,13 +74,14 @@ export const getInformationObjects = async (pagina: string, componente: string):
  * @returns Promise<UploadResponse>
  */
 export const addInformationObject = async (
+  type: 'images' | 'pdfs',
   imageFile: File, 
   component: string, 
   name: string, 
   page: string
 ): Promise<UploadResponse> => {
   const timestamp = new Date().getTime();
-  const storagePath = `images/${page}/${component}/${timestamp}_${imageFile.name}`;
+  const storagePath = `${type}/${page}/${component}/${timestamp}_${imageFile.name}`;
 
   try {
     // Referencia al lugar donde se guardará la imagen en Storage
@@ -91,7 +92,7 @@ export const addInformationObject = async (
     const downloadURL = await getDownloadURL(snapshot.ref);
 
     // Crear un nuevo nodo en la database para guardar los detalles
-    const newInfoRef = push(dbRef(db, 'images'));
+    const newInfoRef = push(dbRef(db, type));
     await set(newInfoRef, {
         component: component,
         name: name,
@@ -108,12 +109,13 @@ export const addInformationObject = async (
 };
 
 export const editInformationObject = async (
+    type: 'images' | 'pdfs',
     key: string, 
     newImageFile: File | null, 
     newName: string
   ): Promise<{ success: boolean; message: string }> => {
     try {
-      const infoRef = dbRef(db, `images/${key}`);
+      const infoRef = dbRef(db, `${type}/${key}`);
       const snapshot = await get(infoRef);
       if (snapshot.exists()) {
         const imageData = snapshot.val() as { name: string, path: string, url: string, page: string, component: string };
@@ -121,7 +123,7 @@ export const editInformationObject = async (
         let updates: UpdateData = {};
         if (newImageFile) {
           // Si hay un nuevo archivo de imagen, subirlo y actualizar la URL y path
-          const newImagePath = `images/${imageData.page}/${imageData.component}/${Date.now()}_${newImageFile.name}`;
+          const newImagePath = `${type}/${imageData.page}/${imageData.component}/${Date.now()}_${newImageFile.name}`;
           const imageStorageRef = refStorage(storage, newImagePath);
           const uploadResult = await uploadBytes(imageStorageRef, newImageFile);
           const newImageUrl = await getDownloadURL(uploadResult.ref);
@@ -183,10 +185,10 @@ export const updateImageUrls = async () => {
  * @param key - La clave del objeto en la base de datos que también indica el archivo en el storage.
  * @returns Promise que se resuelve con true si la eliminación fue exitosa o con un mensaje de error si falla.
  */
-export const deleteInformationObject = async (key: string): Promise<{success: boolean, message?:string}> => {
+export const deleteInformationObject = async (type: 'images' | 'pdfs', key: string): Promise<{success: boolean, message?:string}> => {
   try {
       // Referencia al nodo específico en la base de datos
-      const dbPath = dbRef(db, `images/${key}`);
+      const dbPath = dbRef(db, `${type}/${key}`);
       // Obtener el path del archivo en el storage antes de eliminarlo de la base de datos
       const snapshot = await get(dbPath);
       if (snapshot.exists()) {
@@ -208,3 +210,7 @@ export const deleteInformationObject = async (key: string): Promise<{success: bo
       return { success: false, message: error.message || "Error al eliminar la imagen" };
   }
 };
+
+export const getNews = async() => {
+
+}
