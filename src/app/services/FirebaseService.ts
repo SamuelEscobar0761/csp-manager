@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref as dbRef, get, push, set, remove, update } from "firebase/database";
 import {getStorage, ref as refStorage, uploadBytes, getDownloadURL, deleteObject} from "firebase/storage";
 import InformationObject from '../interfaces/InformationObject';
+import NewsObject from "../interfaces/NewsObject";
 
 interface UploadResponse {
   success: boolean;
@@ -211,6 +212,18 @@ export const deleteInformationObject = async (type: 'images' | 'pdfs', key: stri
   }
 };
 
-export const getNews = async() => {
+export const getNews = async(): Promise<NewsObject[]> => {
+    return [];
+}
 
+export const editNews = async(
+    key: string, 
+    newImageFile: File | null, 
+    newName: string
+  ): Promise<{ success: boolean; message: string }> => {
+    return {success: true, message: ""};
+}
+
+export const deleteNews = async(type: 'images' | 'pdfs', key: string): Promise<{success: boolean, message?:string}> => {
+    return {success: true, message: ""};
 }

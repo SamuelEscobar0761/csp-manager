@@ -32,13 +32,13 @@ const AdminSidebar = ({ setPage, setComponent }: { setPage: any; setComponent: a
           <Link to='/' onClick={() => { setPage("about_us_page"); setComponent("directory") }}>Directorio</Link>
         </div>
         <div className="py-1 hover:bg-gray-600">
-          <Link to='/statute' onClick={() => { setPage("about_us_page"); setComponent("statute") }}>Estatuto</Link>
+          <Link to='/about_us' onClick={() => { setPage("about_us_page"); setComponent("statute") }}>Estatuto</Link>
         </div>
         <div className="py-1 hover:bg-gray-600">
           <Link to='/regulations' onClick={() => { setPage("about_us_page"); setComponent("regulations") }}>Reglamentos</Link>
         </div>
         <div className="py-1 hover:bg-gray-600">
-          <Link to='/memories' onClick={() => { setPage("about_us_page"); setComponent("memories") }}>Memorias</Link>
+          <Link to='/about_us' onClick={() => { setPage("about_us_page"); setComponent("memories") }}>Memorias</Link>
         </div>
       </NavbarItem>
       <NavbarItem title="Deportes">
