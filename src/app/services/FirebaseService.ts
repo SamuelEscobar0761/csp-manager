@@ -82,7 +82,12 @@ export const addInformationObject = async (
   page: string
 ): Promise<UploadResponse> => {
   const timestamp = new Date().getTime();
-  const storagePath = `${type}/${page}/${component}/${timestamp}_${imageFile.name}`;
+  let storagePath = "";
+  if(type === 'images'){
+    storagePath = `${type}/${page}/${component}/${timestamp}_${imageFile.name}`;
+  }else if(type === 'pdfs'){
+    storagePath = `${type}/${timestamp}_${imageFile.name}`;
+  }
 
   try {
     // Referencia al lugar donde se guardará la imagen en Storage
@@ -110,49 +115,59 @@ export const addInformationObject = async (
 };
 
 export const editInformationObject = async (
-    type: 'images' | 'pdfs',
-    key: string, 
-    newImageFile: File | null, 
-    newName: string
-  ): Promise<{ success: boolean; message: string }> => {
-    try {
-      const infoRef = dbRef(db, `${type}/${key}`);
-      const snapshot = await get(infoRef);
-      if (snapshot.exists()) {
-        const imageData = snapshot.val() as { name: string, path: string, url: string, page: string, component: string };
-  
-        let updates: UpdateData = {};
-        if (newImageFile) {
-          // Si hay un nuevo archivo de imagen, subirlo y actualizar la URL y path
-          const newImagePath = `${type}/${imageData.page}/${imageData.component}/${Date.now()}_${newImageFile.name}`;
-          const imageStorageRef = refStorage(storage, newImagePath);
-          const uploadResult = await uploadBytes(imageStorageRef, newImageFile);
-          const newImageUrl = await getDownloadURL(uploadResult.ref);
-  
-          // Actualizar path y url en el objeto de actualizaciones
-          updates.path = newImagePath;
-          updates.url = newImageUrl;
+  type: 'images' | 'pdfs',
+  key: string, 
+  newImageFile: File | null, 
+  newName: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const infoRef = dbRef(db, `${type}/${key}`);
+    const snapshot = await get(infoRef);
+    if (snapshot.exists()) {
+      const imageData = snapshot.val() as { name: string, path: string, url: string, page: string, component: string };
+
+      let updates: UpdateData = {};
+
+      // Si hay un nuevo archivo de imagen, primero eliminar el antiguo
+      if (newImageFile) {
+        // Eliminar el archivo antiguo de Firebase Storage si existe
+        const oldStorageRef = refStorage(storage, imageData.path);
+        await deleteObject(oldStorageRef);
+
+        // Subir el nuevo archivo y actualizar la URL y path
+        let newImagePath = "";
+        if(type === 'images'){
+          newImagePath = `${type}/${imageData.page}/${imageData.component}/${Date.now()}_${newImageFile.name}`;
+        }else if(type === 'pdfs'){
+          newImagePath = `${type}/${Date.now()}_${newImageFile.name}`;
         }
-  
-        // Verificar si el nombre ha cambiado y actualizarlo si es necesario
-        if (newName !== imageData.name) {
-          updates.name = newName;
-        }
-  
-        // Solo llamar a update si realmente hay algo que actualizar
-        if (Object.keys(updates).length > 0) {
-          await update(infoRef, updates);
-        }
-  
-        return { success: true, message: "Información actualizada correctamente." };
-      } else {
-        return { success: false, message: "No se encontró el objeto de información." };
+        const newStorageRef = refStorage(storage, newImagePath);
+        const uploadResult = await uploadBytes(newStorageRef, newImageFile);
+        const newImageUrl = await getDownloadURL(uploadResult.ref);
+
+        updates.path = newImagePath;
+        updates.url = newImageUrl;
       }
-    } catch (error) {
-      console.error('Error al editar el objeto de información:', error);
-      return { success: false, message: 'Error al editar el objeto de información' };
+
+      // Verificar si el nombre ha cambiado y actualizarlo si es necesario
+      if (newName && newName !== imageData.name) {
+        updates.name = newName;
+      }
+
+      // Solo llamar a update si realmente hay algo que actualizar
+      if (Object.keys(updates).length > 0) {
+        await update(infoRef, updates);
+      }
+
+      return { success: true, message: "Información actualizada correctamente." };
+    } else {
+      return { success: false, message: "No se encontró el objeto de información." };
     }
-  };
+  } catch (error) {
+    console.error('Error al editar el objeto de información:', error);
+    return { success: false, message: 'Error al editar el objeto de información' };
+  }
+};
 
 type UpdatePaths = {
   [key: string]: string;  // Permite cualquier clave de string con valores de string
