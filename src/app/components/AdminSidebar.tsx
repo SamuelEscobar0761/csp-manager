@@ -20,7 +20,7 @@ const NavbarItem = ({ title, children }: {title: string, children: any}) => {
 
 const AdminSidebar = ({ setPage, setComponent }: { setPage: any; setComponent: any }) => {
   return (
-    <div className="h-screen w-64 bg-gray-800 text-white">
+    <div className="h-screen w-64 bg-gray-800 text-white sticky top-0">
       <h2 className="p-5 font-bold text-lg">Administración</h2>
       <NavbarItem title="Inicio">
         <div className="py-1 hover:bg-gray-600">
