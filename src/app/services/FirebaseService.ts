@@ -227,31 +227,71 @@ export const deleteInformationObject = async (type: 'images' | 'pdfs', key: stri
   }
 };
 
+const parseDate = (dateStr: string): Date => {
+  const [day, month, year] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados (Enero = 0)
+};
+
+
 export const getNews = async(): Promise<NewsObject[]> => {
-  const newsRef = dbRef(db, "news");  // Asegúrate de que el path 'images' es correcto según tu base de datos
+  const newsRef = dbRef(db, "news");
   try {
       const snapshot = await get(newsRef);
       const newsData = snapshot.val();
       let news: NewsObject[] = [];
       if (newsData) {
-          // Filtrar por 'page' y extraer los datos completos que cumplen con la interfaz Image
-          Object.keys(newsData).forEach(key => { 
-            news.push({
-                key: key,
-                date: newsData[key].date,
-                description: newsData[key].description,
-                image: newsData[key].image,
-                title: newsData[key].title,
-                url: newsData[key].url,  // Inicialmente, url es null hasta que se actualice con la URL real
-            });  
+          // Extraer los datos completos que cumplen con la interfaz NewsObject
+          Object.keys(newsData).forEach(key => {
+              news.push({
+                  key: key,
+                  date: newsData[key].date,
+                  description: newsData[key].description,
+                  image: newsData[key].image,
+                  title: newsData[key].title,
+                  url: newsData[key].url,
+              });
           });
+          // Ordenar noticias por fecha de más reciente a más antigua
+          news.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime());
       }
       return news;
   } catch (error) {
-      console.error('Error al obtener imágenes:', error);
+      console.error('Error al obtener noticias:', error);
       return [];
   }
-}
+};
+
+
+export const addNews = async (title: string, description: string, date: string, imageFile: File): Promise<{ success: boolean; message: string }> => {
+  try {
+      // Subir la imagen primero a Firebase Storage
+      const storagePath = `images/news/${imageFile.name}`;
+      const imageRef = refStorage(storage, storagePath);
+      const snapshot = await uploadBytes(imageRef, imageFile);
+      const imageUrl = await getDownloadURL(snapshot.ref);
+
+      // Si no hay titulo proporcionado asumimos que se trata de un comunicado
+      if(!title){
+        title = "Comunicado";
+      }
+
+      // Guardar la información de la noticia en la base de datos
+      const newsData = {
+          title: title,
+          description: description,
+          date: date,
+          image: storagePath,
+          url: imageUrl
+      };
+      const newsRef = push(dbRef(db, 'news'));
+      await set(newsRef, newsData);
+
+      return { success: true, message: "Noticia agregada correctamente" };
+  } catch (error) {
+      console.error('Error al agregar noticia:', error);
+      return { success: false, message: error instanceof Error ? error.message : 'Error desconocido' };
+  }
+};
 
 export const editNews = async(
     key: string, 
@@ -261,6 +301,28 @@ export const editNews = async(
     return {success: true, message: ""};
 }
 
-export const deleteNews = async(type: 'images' | 'pdfs', key: string): Promise<{success: boolean, message?:string}> => {
-    return {success: true, message: ""};
+export const deleteNews = async(key: string): Promise<{success: boolean, message?:string}> => {
+  try {
+    // Referencia al nodo específico en la base de datos
+    const dbPath = dbRef(db, `news/${key}`);
+    // Obtener el path de la imágen en el storage antes de eliminarlo de la base de datos
+    const snapshot = await get(dbPath);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        // Referencia al archivo en el storage
+        const storagePath = refStorage(storage, data.image);
+
+        // Eliminar archivo de Firebase Storage
+        await deleteObject(storagePath);
+        // Eliminar nodo de la base de datos
+        await remove(dbPath);
+
+        return { success: true, message: "Imagen eliminada correctamente" };
+    } else {
+        return { success: false, message: "No existe el objeto con la clave proporcionada, por favor comuniquese con el desarrollador Samuel Escobar" };
+    }
+  } catch (error: any) {
+      console.error('Error al eliminar el objeto de información:', error);
+      return { success: false, message: error.message || "Error al eliminar la imagen" };
+  }
 }

@@ -128,9 +128,9 @@ export const AboutUsPage = ({ page, component }: { page: string, component: stri
             {showAddDialog && (
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
               <div className="bg-white p-4 rounded-lg space-y-4">
-                <h2 className="text-lg font-semibold">Add New Document</h2>
+                <h2 className="text-lg font-semibold">Agregar nuevo pdf</h2>
                   <input type="file" accept="application/pdf" onChange={handleFileChange} />
-                  <input type="text" onChange={(e) => setNewPdf(prev => ({ ...prev, name: e.target.value}))} className="p-2 border rounded" placeholder="Document Name" />
+                  <input type="text" onChange={(e) => setNewPdf(prev => ({ ...prev, name: e.target.value}))} className="p-2 border rounded" placeholder="Nombre" />
                   <div className="flex justify-around">
                     <button onClick={() => setShowAddDialog(false)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
                     <button onClick={handleNewPdfSubmit} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirmar</button>
@@ -143,7 +143,7 @@ export const AboutUsPage = ({ page, component }: { page: string, component: stri
                 <div className="bg-white p-4 rounded-lg space-y-4">
                   <p className="text-left text-lg font-semibold">Estás a punto de editar la imágen de "{editDialog.pdfName}".<br/>¿Estás seguro de guardar los cambios? La acción no podrá deshacerse.</p>
                   <input type="file" onChange={handleFileChange} accept="application/pdf" />
-                  <input type="text" value={newPdf.name!} onChange={(e) => setNewPdf(prev => ({ ...prev, name: e.target.value}))} className="p-2 border rounded" placeholder="nombre" />
+                  <input type="text" value={newPdf.name!} onChange={(e) => setNewPdf(prev => ({ ...prev, name: e.target.value}))} className="p-2 border rounded" placeholder="Nombre" />
                   <div className="flex justify-around">
                     <button onClick={() => handleEditSubmit()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Guardar y remplazar</button>
                     <button onClick={() => cancelEdit()} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
