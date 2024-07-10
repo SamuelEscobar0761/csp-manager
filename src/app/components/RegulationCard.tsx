@@ -3,16 +3,16 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 
 export const RegulationCard = ({ key, name, url, onEdit, onDelete }: { key: string, name: string, url: string, onEdit: any, onDelete: any }) => {
     return(
-    <div className="bg-gray-100 p-5 rounded">
-      <div className="flex h-full pb-5 items-center justify-start ... ">
-        <div className='pt-5'>
-            <img src='/pdf_icon.png' className="w-20 h-20"/>
+    <div className="bg-gray-100 pt-5 px-5 rounded">
+      <div className="flex justify-end ...">
+        <button onClick={() => {onEdit()}} className="text-white bg-blue-500 rounded p-2 w-10 h-10"><EditOutlinedIcon/></button>
+        <button onClick={() => {onDelete()}} className="ml-2 text-white bg-red-500 rounded py-2 w-10 h-10"><DeleteOutlineOutlinedIcon/></button>
+      </div>
+      <div className="flex h-full py-5 justify-start ... ">
+        <div>
+            <img src='/pdf_icon.png' className="w-[50px] h-[50px]"/>
         </div>
-        <div className="flex-1 ml-4">
-          <div className="flex mb-2 justify-end ...">
-            <button onClick={() => {onEdit()}} className="mx-5 text-white bg-blue-500 rounded p-2 w-10 h-10"><EditOutlinedIcon/></button>
-            <button onClick={() => {onDelete()}} className="text-white bg-red-500 rounded py-2 w-10 h-10"><DeleteOutlineOutlinedIcon/></button>
-          </div>
+        <div className="flex-1 ml-4 ">
             <a href={url} className="break-words underline"> {/* break-words permite que el texto se ajuste y rompa correctamente */}
               {name}
             </a>

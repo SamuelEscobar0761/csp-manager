@@ -4,5 +4,5 @@ export default interface NewsObject {
     description: string;
     image: string;
     title: string;
-    url?: string | null; // La URL es opcional y puede ser null
+    url: string | null; // La URL es opcional y puede ser null
 }

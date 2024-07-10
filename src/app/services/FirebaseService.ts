@@ -39,31 +39,31 @@ const db = getDatabase(app);
 const storage = getStorage();
 
 export const getInformationObjects = async (type: 'images' | 'pdfs', pagina: string, componente: string): Promise<InformationObject[]> => {
-    const imagenesRef = dbRef(db, type);  // Asegúrate de que el path 'images' es correcto según tu base de datos
-    try {
-        const snapshot = await get(imagenesRef);
-        const imagesData = snapshot.val();
-        let images: InformationObject[] = [];
-        if (imagesData) {
-            // Filtrar por 'page' y extraer los datos completos que cumplen con la interfaz Image
-            Object.keys(imagesData).forEach(key => {
-                if (imagesData[key].page === pagina && imagesData[key].component === componente) {
-                    images.push({
-                        key: key,
-                        page: imagesData[key].page,
-                        component: imagesData[key].component,
-                        name: imagesData[key].name,
-                        path: imagesData[key].path,
-                        url: imagesData[key].url,  // Inicialmente, url es null hasta que se actualice con la URL real
-                    });
-                }
-            });
-        }
-        return images;
-    } catch (error) {
-        console.error('Error al obtener imágenes:', error);
-        return [];
-    }
+  const imagenesRef = dbRef(db, type);  // Asegúrate de que el path 'images' es correcto según tu base de datos
+  try {
+      const snapshot = await get(imagenesRef);
+      const imagesData = snapshot.val();
+      let images: InformationObject[] = [];
+      if (imagesData) {
+          // Filtrar por 'page' y extraer los datos completos que cumplen con la interfaz Image
+          Object.keys(imagesData).forEach(key => {
+              if (imagesData[key].page === pagina && imagesData[key].component === componente) {
+                  images.push({
+                      key: key,
+                      page: imagesData[key].page,
+                      component: imagesData[key].component,
+                      name: imagesData[key].name,
+                      path: imagesData[key].path,
+                      url: imagesData[key].url,  // Inicialmente, url es null hasta que se actualice con la URL real
+                  });
+              }
+          });
+      }
+      return images;
+  } catch (error) {
+      console.error('Error al obtener imágenes:', error);
+      return [];
+  }
 };
 
 /**
@@ -228,7 +228,29 @@ export const deleteInformationObject = async (type: 'images' | 'pdfs', key: stri
 };
 
 export const getNews = async(): Promise<NewsObject[]> => {
-    return [];
+  const newsRef = dbRef(db, "news");  // Asegúrate de que el path 'images' es correcto según tu base de datos
+  try {
+      const snapshot = await get(newsRef);
+      const newsData = snapshot.val();
+      let news: NewsObject[] = [];
+      if (newsData) {
+          // Filtrar por 'page' y extraer los datos completos que cumplen con la interfaz Image
+          Object.keys(newsData).forEach(key => { 
+            news.push({
+                key: key,
+                date: newsData[key].date,
+                description: newsData[key].description,
+                image: newsData[key].image,
+                title: newsData[key].title,
+                url: newsData[key].url,  // Inicialmente, url es null hasta que se actualice con la URL real
+            });  
+          });
+      }
+      return news;
+  } catch (error) {
+      console.error('Error al obtener imágenes:', error);
+      return [];
+  }
 }
 
 export const editNews = async(

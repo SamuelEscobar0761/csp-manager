@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import NewsObject from "../interfaces/NewsObject";
 import { getNews } from "../services/FirebaseService";
+import { NewsCard } from "../components/NewsCard";
 
 export const NewsPage = ({ page, component }: { page: string, component: string }) => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -10,8 +11,9 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
     const loadNews = useCallback(async () => {
         setLoading(true);
         try {
-            const infoPdfs = await getNews();
-            setNewsInformationObjects(infoPdfs);
+            const infoNews = await getNews();
+            console.log(infoNews);
+            setNewsInformationObjects(infoNews);
         } catch (error) {
             console.error('Error al obtener las imágenes:', error);
         } finally {
@@ -29,6 +31,12 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
     }
 
     return(
-        <></>
+        <div>
+            {newsInformationObjects.map((item, index) =>(
+                <div key={index}>
+                    <NewsCard key={item.key} date={item.date} description={item.description} title={item.title} url={item.url!} onEdit={()=>{}} onDelete={() => {}}/>
+                </div>
+            ))}
+        </div>
     );
 }

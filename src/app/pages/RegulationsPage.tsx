@@ -98,8 +98,8 @@ export const RegulationsPage = ({ page, component }: { page: string, component: 
     return(
         <div>
             <h2 className="px-5 py-10 text-7xl">Reglamentos</h2>
-            <div className="grid grid-cols-3 gap-5 auto-rows-min px-5">
-                {pdfInformationObjects.map((item, index) =>(
+            <div className="grid grid-cols-3 gap-5 px-5">
+                {pdfInformationObjects.map((item) =>(
                     <RegulationCard key={item.key} name={item.name} url={item.url!} onEdit={() => handleEditClick(item.key, item.name)} onDelete={() => handleDeleteClick(item.key)}/>
                 ))}
             </div>
