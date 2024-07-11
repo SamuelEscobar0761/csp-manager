@@ -1,7 +1,7 @@
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 
-export const RegulationCard = ({ key, name, url, onEdit, onDelete }: { key: string, name: string, url: string, onEdit: any, onDelete: any }) => {
+export const RegulationCard = ({ name, url, onEdit, onDelete }: { name: string, url: string, onEdit: any, onDelete: any }) => {
     return(
     <div className="bg-gray-100 pt-5 px-5 rounded">
       <div className="flex justify-end ...">
@@ -13,7 +13,7 @@ export const RegulationCard = ({ key, name, url, onEdit, onDelete }: { key: stri
             <img src='/pdf_icon.png' className="w-[50px] h-[50px]"/>
         </div>
         <div className="flex-1 ml-4 ">
-            <a href={url} className="break-words underline"> {/* break-words permite que el texto se ajuste y rompa correctamente */}
+            <a href={url} target="_blank" className="break-words underline"> {/* break-words permite que el texto se ajuste y rompa correctamente */}
               {name}
             </a>
           </div>
