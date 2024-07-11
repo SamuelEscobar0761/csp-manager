@@ -3,6 +3,7 @@ import { getDatabase, ref as dbRef, get, push, set, remove, update } from "fireb
 import {getStorage, ref as refStorage, uploadBytes, getDownloadURL, deleteObject} from "firebase/storage";
 import InformationObject from '../interfaces/InformationObject';
 import NewsObject from "../interfaces/NewsObject";
+import { getAuth, signOut } from 'firebase/auth';
 
 interface UploadResponse {
   success: boolean;
@@ -392,3 +393,14 @@ export const deleteNews = async(key: string): Promise<{success: boolean, message
       return { success: false, message: error.message || "Error al eliminar la imagen" };
   }
 }
+
+
+export const logoutUser = async (): Promise<void> => {
+  const auth = getAuth();
+  try {
+    await signOut(auth);
+    console.log("Sesión cerrada con éxito");
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};

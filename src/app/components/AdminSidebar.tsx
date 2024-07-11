@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { logoutUser } from '../services/FirebaseService';
 
 const NavbarItem = ({ title, children }: {title: string, children: any}) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +20,15 @@ const NavbarItem = ({ title, children }: {title: string, children: any}) => {
 };
 
 const AdminSidebar = ({ setPage, setComponent }: { setPage: any; setComponent: any }) => {
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      console.log("Sesión cerrada con éxito");
+    } catch (error: any) {
+      console.error('Error al cerrar sesión:', error.message);
+    }
+  };
+
   return (
     <div className="h-screen w-64 bg-gray-800 text-white sticky top-0">
       <h2 className="p-5 font-bold text-lg">Administración</h2>
@@ -88,6 +98,14 @@ const AdminSidebar = ({ setPage, setComponent }: { setPage: any; setComponent: a
       </NavbarItem>
       <div className="pl-4 py-1 hover:bg-gray-600">
         <Link to='/news' className='block w-full' onClick={() => { setPage("news"); setComponent("news") }}>Noticias</Link>
+      </div>
+      <div className="px-4 py-2 mt-auto">
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Cerrar sesión
+        </button>
       </div>
     </div>
   );
