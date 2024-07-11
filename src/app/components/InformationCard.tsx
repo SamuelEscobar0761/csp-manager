@@ -6,9 +6,11 @@ const InformationCard = ({ imageName, imageUrl, disableDeleteButton, newsView, o
 
   // Si no es vista de noticias, mostramos la tarjeta normalmente
   return (
-    <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-2">
-      <img className="w-full" src={imageUrl} alt={imageName} />
-      <p>{imageName}</p>
+    <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-2 p-2">
+      <div className="flex justify-center">
+        <img className="w-auto h-72" src={imageUrl} alt={imageName} />
+      </div>
+      <p className="text-xl text-center mt-5">{imageName}</p>
       <div className="px-6 pt-4 pb-2 flex justify-between">
         <button 
           onClick={() => onEdit()}

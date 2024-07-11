@@ -133,6 +133,7 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
 
     return(
         <div>
+            <h2 className="px-5 py-5 text-7xl">Noticias</h2>
             <button onClick={handleAddButtonClick} className="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
                     <span className="text-xl">+</span>
                 </button>
