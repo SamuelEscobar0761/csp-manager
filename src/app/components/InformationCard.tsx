@@ -8,7 +8,7 @@ const InformationCard = ({ imageName, imageUrl, disableDeleteButton, newsView, o
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-2 p-2">
       <div className="flex justify-center">
-        <img className="w-auto h-72" src={imageUrl} alt={imageName} />
+        <img className="w-auto" src={imageUrl} alt={imageName} />
       </div>
       <p className="text-xl text-center mt-5">{imageName}</p>
       <div className="px-6 pt-4 pb-2 flex justify-between">
