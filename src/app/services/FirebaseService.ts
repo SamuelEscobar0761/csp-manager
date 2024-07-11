@@ -21,6 +21,14 @@ interface UpdateData {
     url?: string;
 }
 
+interface UpdateNews {
+  date?: string;
+  description?: string;
+  image?: string;
+  title?: string;
+  url?: string;
+}
+
 // Configuración de Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCiXm7xzyou9GySZ7Y7x1tmm6CYs-BBars",
@@ -294,11 +302,69 @@ export const addNews = async (title: string, description: string, date: string, 
 };
 
 export const editNews = async(
-    key: string, 
-    newImageFile: File | null, 
-    newName: string
+    key: string,
+    type: string,
+    title: string, 
+    description: string,
+    date: string,
+    imageFile: File | null
   ): Promise<{ success: boolean; message: string }> => {
-    return {success: true, message: ""};
+    try {
+      const infoRef = dbRef(db, `news/${key}`);
+      const snapshot = await get(infoRef);
+      if (snapshot.exists()) {
+        const newsData = snapshot.val() as { date: string, description: string, image: string, title: string, url: string };
+  
+        let updates: UpdateNews = {};
+  
+        // Si hay un nuevo archivo de imagen, primero eliminar el antiguo
+        if (imageFile) {
+          // Eliminar el archivo antiguo de Firebase Storage si existe
+          const oldStorageRef = refStorage(storage, newsData.image);
+          await deleteObject(oldStorageRef);
+  
+          // Subir el nuevo archivo y actualizar la URL y path
+          const newImagePath = `images/news/${Date.now()}_${imageFile.name}`;
+          const newStorageRef = refStorage(storage, newImagePath);
+          const uploadResult = await uploadBytes(newStorageRef, imageFile);
+          const newImageUrl = await getDownloadURL(uploadResult.ref);
+  
+          updates.image = newImagePath;
+          updates.url = newImageUrl;
+        }
+
+        if(type === 'comunicado'){
+          updates.title = "Comunicado";
+          updates.description = "";
+        }
+  
+        // Verificar si el titulo ha cambiado y actualizarlo si es necesario
+        if (title && title !== newsData.title) {
+          updates.title = title;
+        }
+
+        // Verificar si la descripción ha cambiado y actualizarla si es necesario
+        if (description && description !== newsData.description) {
+          updates.description = description;
+        }
+
+        // Verificar si la fecha ha cambiado y actualizarlo si es necesario
+        if (date && date !== newsData.date) {
+          updates.date = date;
+        }
+        // Solo llamar a update si realmente hay algo que actualizar
+        if (Object.keys(updates).length > 0) {
+          await update(infoRef, updates);
+        }
+  
+        return { success: true, message: "Información actualizada correctamente." };
+      } else {
+        return { success: false, message: "No se encontró el objeto de información." };
+      }
+    } catch (error) {
+      console.error('Error al editar el objeto de información:', error);
+      return { success: false, message: 'Error al editar el objeto de información' };
+    }
 }
 
 export const deleteNews = async(key: string): Promise<{success: boolean, message?:string}> => {

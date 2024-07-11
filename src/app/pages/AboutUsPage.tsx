@@ -6,7 +6,6 @@ export const AboutUsPage = ({ page, component }: { page: string, component: stri
     const [loading, setLoading] = useState<boolean>(false);
     const [pdfInformationObjects, setPdfInformationObjects] = useState<InformationObject[]>([]);
     const [editDialog, setEditDialog] = useState<{ show: boolean, pdfKey?: string, pdfName?: string }>({ show: false });
-    const [confirmButtonEnable, setConfirmButtonEnable] = useState<boolean>(false);
     const [newPdf, setNewPdf] = useState<{ name?: string | null, file?: File | null}>({name: ""});
     const [confirmDelete, setConfirmDelete] = useState<{ show: boolean, pdfKey?: string }>({ show: false });
     const [showAddDialog, setShowAddDialog] = useState(false);
@@ -25,17 +24,15 @@ export const AboutUsPage = ({ page, component }: { page: string, component: stri
     }, [page, component]);
 
     const handleEditClick = async (key: string, pdfName: string) => {
-        setConfirmButtonEnable(true);
         setEditDialog({ show: true, pdfKey: key, pdfName: pdfName });
         setNewPdf({name: pdfName});
     };
 
     const handleEditSubmit = async () => {
-        if (editDialog.pdfKey && confirmButtonEnable) {
-            setConfirmButtonEnable(false);
+        if (editDialog.pdfKey) {
+            setEditDialog({ show: false });
             const response = await editInformationObject('pdfs', editDialog.pdfKey, newPdf.file? newPdf.file : null, newPdf.name!);
             if (response.success) {
-                setEditDialog({ show: false });
                 await loadPdfs(); // Reload the images to reflect the changes
             } else {
                 alert('Error al subir el archivo pdf, error de conexión');
@@ -54,16 +51,14 @@ export const AboutUsPage = ({ page, component }: { page: string, component: stri
     };
 
     const handleDeleteClick = (pdfKey: string) => {
-        setConfirmButtonEnable(true);
         setConfirmDelete({ show: true, pdfKey: pdfKey });
     };
 
     const handleDeleteConfirm = async () => {
-        if (confirmDelete.pdfKey && confirmButtonEnable) {
-            setConfirmButtonEnable(false);
+        if (confirmDelete.pdfKey) {
+            setConfirmDelete({ show: false });
             const result = await deleteInformationObject('pdfs', confirmDelete.pdfKey);
             if (result.success) {
-                setConfirmDelete({ show: false });
                 loadPdfs();  // Recargar la lista de PDFs
             } else {
                 alert(result.message);
@@ -73,11 +68,10 @@ export const AboutUsPage = ({ page, component }: { page: string, component: stri
 
     // Función para manejar la subida de un nuevo PDF
     const handleNewPdfSubmit = async () => {
-        if (newPdf.file && newPdf.name && confirmButtonEnable) {
-            setConfirmButtonEnable(false);
+        if (newPdf.file && newPdf.name) {
+            setShowAddDialog(false);
             const result = await addInformationObject('pdfs', newPdf.file, component, newPdf.name, page);
             if (result.success) {
-                setShowAddDialog(false);
                 loadPdfs(); // Recargar la lista de PDFs
             } else {
                 alert('Please ensure both file and name are provided: ' + result.message);
@@ -121,7 +115,7 @@ export const AboutUsPage = ({ page, component }: { page: string, component: stri
               </div>
             ))}
             {(pdfInformationObjects.length < 1 &&(
-              <button onClick={() => {setShowAddDialog(true); setConfirmButtonEnable(true);}} className="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+              <button onClick={() => {setShowAddDialog(true);}} className="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
                 <span className="text-xl">+</span>
               </button>
             ))}

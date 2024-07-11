@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import NewsObject from "../interfaces/NewsObject";
-import { addNews, deleteNews, getNews } from "../services/FirebaseService";
+import { addNews, deleteNews, editNews, getNews } from "../services/FirebaseService";
 import { NewsCard } from "../components/NewsCard";
 
 export const NewsPage = ({ page, component }: { page: string, component: string }) => {
@@ -9,7 +9,7 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
     const [selectedType, setSelectedType] = useState('comunicado');
     const [showAddDialog, setShowAddDialog] = useState<boolean>(false);
     const [inputsfilled, setInputsFilled] = useState<boolean>(true);
-    const [editDialog, setEditDialog] = useState<{ show: boolean, pdfKey?: string, pdfName?: string }>({ show: false });
+    const [editDialog, setEditDialog] = useState<{ show: boolean, newsKey?: string }>({ show: false });
     const [newNews, setNewNews] = useState<{ title?: string, date?: string | null, image?: File | null, description?: string}>({title:"", description: ""});
     const [confirmDelete, setConfirmDelete] = useState<{ show: boolean, newsKey?: string }>({ show: false });
     
@@ -34,7 +34,7 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
         setSelectedType(event.target.value);
     };
 
-    const formatDate = (dateString: string): string => {
+    const formatDateToString = (dateString: string): string => {
         // Asegúrate de tratar la fecha como UTC para evitar cambios por zona horaria
         const date = new Date(dateString + 'T00:00:00Z');
         const day = ("0" + date.getUTCDate()).slice(-2);  // Usar getUTCDate para obtener el día UTC
@@ -43,19 +43,22 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
         return `${day}-${month}-${year}`; // Formato dd-mm-yyyy
     };
 
+    const formatStringToDate = (date: string): string =>{
+        const [day, month, year] = date.split("-");
+        return `${year}-${month}-${day}`;
+    }
+
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const formattedDate = formatDate(event.target.value);
+        const formattedDate = formatDateToString(event.target.value);
         setNewNews(prev => ({ ...prev, date: formattedDate }));
     };
 
     const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(event.target.value);
         const title = event.target.value;
         setNewNews(prev => ({ ...prev, title: title }));
     }
 
     const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(event.target.value);
         const description = event.target.value;
         setNewNews(prev => ({ ...prev, description: description }));
     }
@@ -92,6 +95,29 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
         }
     };
 
+    const handleEditClick = (newsKey: string) => {
+        setEditDialog({ show: true, newsKey: newsKey });
+        const newsSelected = newsInformationObjects.filter(item => item.key == newsKey)[0];
+        if(newsSelected.title === "Comunicado"){
+            setSelectedType("comunicado");
+        }else{
+            setSelectedType("publicacion");
+        }
+        setNewNews({title: newsSelected.title, date: newsSelected.date, description: newsSelected.description});
+    }
+
+    const handleEditConfirm = async() => {
+        if(editDialog.newsKey && !(selectedType === 'publicacion' && newNews.title === 'Comunicado')){
+            setEditDialog({show: false});
+            const result = await editNews(editDialog.newsKey, selectedType, newNews.title!, newNews.description!, newNews.date!, newNews.image!);
+            if (result.success) {
+                loadNews();  // Recargar la lista de PDFs
+            } else {
+                alert(result.message);
+            }
+        }
+    }
+
     // Cargar imágenes al montar y cuando cambian las dependencias
     useEffect(() => {
         loadNews();
@@ -112,34 +138,34 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
                 </button>
             {newsInformationObjects.map((item, index) =>(
                 <div key={index}>
-                    <NewsCard key={item.key} date={item.date} description={item.description} title={item.title} url={item.url!} onEdit={()=>{}} onDelete={() => handleDeleteClick(item.key)}/>
+                    <NewsCard key={item.key} date={item.date} description={item.description} title={item.title} url={item.url!} onEdit={()=>handleEditClick(item.key)} onDelete={() => handleDeleteClick(item.key)}/>
                 </div>
             ))}
             {showAddDialog && (
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-              <div className="bg-white p-4 rounded-lg space-y-4">
-                <h2 className="text-lg font-semibold">Nueva noticia</h2>
-                <select id="typeSelect" className='border-solid border-2 border-gray-500 m-2 rounded p-[2px] cursor-pointer' value={selectedType} onChange={handleTypeChange}>
-                  <option value="comunicado">Comunicado</option>
-                  <option value="publicacion">Publicación</option>
-                </select>
-                <input type="file" accept="image/png, image/jpeg" onChange={(e) => setNewNews(prev => ({ ...prev, image: e.target.files ? e.target.files[0] : null}))} />
-                <input type="date" onChange={handleDateChange} className="p-2 border rounded" placeholder="Fecha" />
-                {selectedType === 'publicacion' &&(
-                  <div>
-                    <input type="text" onChange={handleTitleChange} className="" placeholder="Título"/>
-                    <input type="text" onChange={handleDescriptionChange} className="" placeholder="Descripción"/>
-                  </div>
-                )}
-                  <div className="flex justify-around">
-                    <button onClick={() => setShowAddDialog(false)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
-                    <button onClick={handleNewNewsSubmit} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirmar</button>
-                  </div>
-                {!inputsfilled &&(
-                    <p className="text-red-500 text-md">Por favor asegurate de haber llenado todos los campos.</p>
-                )}
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+                <div className="bg-white p-4 rounded-lg space-y-4">
+                  <h2 className="text-lg font-semibold">Nueva noticia</h2>
+                  <select id="typeSelect" className='border-solid border-2 border-gray-500 m-2 rounded p-[2px] cursor-pointer' value={selectedType} onChange={handleTypeChange}>
+                    <option value="comunicado">Comunicado</option>
+                    <option value="publicacion">Publicación</option>
+                  </select>
+                  <input type="file" accept="image/png, image/jpeg" onChange={(e) => setNewNews(prev => ({ ...prev, image: e.target.files ? e.target.files[0] : null}))} />
+                  <input type="date" onChange={handleDateChange} className="p-2 border rounded" placeholder="Fecha" />
+                  {selectedType === 'publicacion' &&(
+                    <div>
+                      <input type="text" onChange={handleTitleChange} className="" placeholder="Título"/>
+                      <input type="text" onChange={handleDescriptionChange} className="" placeholder="Descripción"/>
+                    </div>
+                  )}
+                    <div className="flex justify-around">
+                      <button onClick={() => setShowAddDialog(false)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
+                      <button onClick={handleNewNewsSubmit} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirmar</button>
+                    </div>
+                  {!inputsfilled &&(
+                      <p className="text-red-500 text-md">Por favor asegurate de haber llenado todos los campos.</p>
+                  )}
+                </div>
               </div>
-            </div>
             )}
             {confirmDelete.show &&(
               <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
@@ -149,6 +175,32 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
                     <button onClick={handleDeleteConfirm} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Confirmar</button>
                    <button onClick={() => {setConfirmDelete(prev => ({...prev, show: false}))}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
                   </div>
+                </div>
+              </div>
+            )}
+            {editDialog.show &&(
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+                <div className="bg-white p-4 rounded-lg space-y-4">
+                  <h2 className="text-lg font-semibold">¡Atención! Este cambio es irreversible.</h2>
+                  <select id="typeSelect" className='border-solid border-2 border-gray-500 m-2 rounded p-[2px] cursor-pointer' value={selectedType} onChange={handleTypeChange}>
+                    <option value="comunicado">Comunicado</option>
+                    <option value="publicacion">Publicación</option>
+                  </select>
+                  <input type="file" accept="image/png, image/jpeg" onChange={(e) => setNewNews(prev => ({ ...prev, image: e.target.files ? e.target.files[0] : null}))} />
+                  <input type="date" onChange={handleDateChange} className="p-2 border rounded" value={formatStringToDate(newNews.date!)}/>
+                  {selectedType === 'publicacion' &&(
+                    <div>
+                      <input type="text" onChange={handleTitleChange} className="border rounded" value={newNews.title}/>
+                      <input type="text" onChange={handleDescriptionChange} className="mx-2 border rounded" value={newNews.description} placeholder="Descripción"/>
+                    </div>
+                  )}
+                    <div className="flex justify-around">
+                      <button onClick={() => setEditDialog({show:false})} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Cancelar</button>
+                      <button onClick={handleEditConfirm} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirmar</button>
+                    </div>
+                    {selectedType === 'publicacion' && newNews.title === 'Comunicado' &&(
+                    <p className="text-red-500 text-md">El título de una publicación no puede ser "Comunicado", ese título es exclusivo para comunicados</p>
+                )}
                 </div>
               </div>
             )}

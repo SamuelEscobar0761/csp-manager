@@ -8,25 +8,20 @@ export const MainLayout = ({ page, component }: { page: string, component: strin
     const [loading, setLoading] = useState<boolean>(false);
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const [editDialog, setEditDialog] = useState<{ show: boolean, imageKey?: string, imageName?: string }>({ show: false });
-    const [saveButtonEnable, setSaveButtonEnable] = useState<boolean>(false);
-    const [editButtonEnable, setEditButtonEnable] = useState<boolean>(false);
-    const [deleteButtonEnable, setDeleteButtonEnable] = useState<boolean>(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imageName, setImageName] = useState<string>("");
     const [confirmDelete, setConfirmDelete] = useState<{ show: boolean, imageKey?: string, imageName?: string }>({ show: false });
 
     const handleEditClick = (imageKey: string, imageName: string) => {
-        setEditButtonEnable(true);
         setImageName(imageName); // Set the current name in the input field
         setEditDialog({ show: true, imageKey, imageName });
     };
 
     const handleEditSubmit = async () => {
-        if (editDialog.imageKey && editButtonEnable) {
-            setEditButtonEnable(false);
+        if (editDialog.imageKey) {
+            setEditDialog({ show: false });
             const response = await editInformationObject('images', editDialog.imageKey, imageFile, imageName);
             if (response.success) {
-                setEditDialog({ show: false });
                 await loadImages(); // Reload the images to reflect the changes
             } else {
                 alert('Failed to update the image');
@@ -41,26 +36,24 @@ export const MainLayout = ({ page, component }: { page: string, component: strin
     };
 
     const handleDeleteClick = (imageKey: string, imageName: string) => {
-        setDeleteButtonEnable(true);
         setConfirmDelete({ show: true, imageKey, imageName });
     };
 
     const deleteImage = async () => {
-    if (confirmDelete.imageKey && deleteButtonEnable) {
-        setDeleteButtonEnable(false);
-        const response = await deleteInformationObject('images', confirmDelete.imageKey);
-        if (response.success) {
+        if (confirmDelete.imageKey) {
             setConfirmDelete({ show: false });
-            await loadImages(); // Recargar las imágenes después de borrar
-        } else {
-            alert('No se pudo borrar la imagen');
+            const response = await deleteInformationObject('images', confirmDelete.imageKey);
+            if (response.success) {
+                await loadImages(); // Recargar las imágenes después de borrar
+            } else {
+                alert('No se pudo borrar la imagen');
+            }
         }
-    }
-};
+    };
 
-const cancelDelete = () => {
-    setConfirmDelete({ show: false });
-};
+    const cancelDelete = () => {
+        setConfirmDelete({ show: false });
+    };
 
 
     // Encapsula la función de carga en useCallback para evitar redefiniciones innecesarias
@@ -82,7 +75,6 @@ const cancelDelete = () => {
     }, [loadImages]);
 
     const handleAddButtonClick = () => {
-        setSaveButtonEnable(true);
         setShowDialog(true);
     };
 
@@ -93,11 +85,10 @@ const cancelDelete = () => {
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        if (imageFile && imageName && saveButtonEnable) {
-            setSaveButtonEnable(false);
+        if (imageFile && imageName) {
+            setShowDialog(false);
             const response = await addInformationObject('images', imageFile, component, imageName, page);
             if (response.success) {
-                setShowDialog(false);
                 setImageFile(null);
                 setImageName("");
                 await loadImages(); // Asegúrate de recargar las imágenes solo después de la subida exitosa
