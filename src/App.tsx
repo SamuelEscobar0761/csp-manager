@@ -1,4 +1,4 @@
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import AdminSidebar from './app/components/AdminSidebar';
 import { MainLayout } from './app/pages/MainLayout';
 import { useEffect, useState } from 'react';
@@ -52,6 +52,7 @@ function App() {
             <Route path="/about_us" element={<AboutUsPage page={page} component={component}/>} />
             <Route path="/regulations" element={<RegulationsPage page={page} component={component}/>} />
             <Route path="/news" element={<NewsPage page={page} component={component}/>} />
+            <Route path="/*" element={ <Navigate to='/' /> } />
           </Routes>
         </div>
       ) : (

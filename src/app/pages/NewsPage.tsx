@@ -58,7 +58,7 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
         setNewNews(prev => ({ ...prev, title: title }));
     }
 
-    const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleDescriptionChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const description = event.target.value;
         setNewNews(prev => ({ ...prev, description: description }));
     }
@@ -154,8 +154,8 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
                   <input type="date" onChange={handleDateChange} className="p-2 border rounded" placeholder="Fecha" />
                   {selectedType === 'publicacion' &&(
                     <div>
-                      <input type="text" onChange={handleTitleChange} className="" placeholder="Título"/>
-                      <input type="text" onChange={handleDescriptionChange} className="" placeholder="Descripción"/>
+                      <input type="text" onChange={handleTitleChange} className="mb-5 border rounded w-full" placeholder="Título"/>
+                      <textarea onChange={handleDescriptionChange} className="border rounded w-full h-96" placeholder="Descripción"/>
                     </div>
                   )}
                     <div className="flex justify-around">
@@ -191,8 +191,8 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
                   <input type="date" onChange={handleDateChange} className="p-2 border rounded" value={formatStringToDate(newNews.date!)}/>
                   {selectedType === 'publicacion' &&(
                     <div>
-                      <input type="text" onChange={handleTitleChange} className="border rounded" value={newNews.title}/>
-                      <input type="text" onChange={handleDescriptionChange} className="mx-2 border rounded" value={newNews.description} placeholder="Descripción"/>
+                      <input type="text" onChange={handleTitleChange} className="mb-5 border rounded w-full" placeholder="Título"/>
+                      <textarea onChange={handleDescriptionChange} className="border rounded w-full h-96" placeholder="Descripción"/>
                     </div>
                   )}
                     <div className="flex justify-around">
