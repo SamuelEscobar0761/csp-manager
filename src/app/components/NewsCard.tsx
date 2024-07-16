@@ -38,7 +38,7 @@ export const NewsCard = ({date, description, title, url, onEdit, onDelete}: {dat
               </div>
             </div>
             <div className="flex justify-center mt-5">
-                <img src={url} className="w-auto"/>
+                <img src={url} className="w-auto h-96"/>
             </div>
           </div>
         )}

@@ -68,10 +68,13 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
         if(!newNews.image || !newNews.date || (selectedType === 'publicacion' && (!newNews.title || !newNews.description))){
             setInputsFilled(false);
         }else{
+            setLoading(true);
             setShowAddDialog(false);
             setInputsFilled(true);
             const result = await addNews(newNews.title!, newNews.description!, newNews.date, newNews.image);
             if (result.success) {
+                setLoading(false);
+                setNewNews({title:"", description: ""});
                 loadNews(); // Recargar la lista de PDFs
             } else {
                 alert('Please ensure both file and name are provided: ' + result.message);
@@ -85,9 +88,11 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
 
     const handleDeleteConfirm = async () => {
         if (confirmDelete.newsKey) {
+            setLoading(true);
             setConfirmDelete({ show: false });
             const result = await deleteNews(confirmDelete.newsKey);
             if (result.success) {
+                setLoading(false);
                 loadNews();  // Recargar la lista de PDFs
             } else {
                 alert(result.message);
@@ -109,9 +114,12 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
     const handleEditConfirm = async() => {
         if(editDialog.newsKey && !(selectedType === 'publicacion' && newNews.title === 'Comunicado')){
             setEditDialog({show: false});
+            setLoading(true);
             const result = await editNews(editDialog.newsKey, selectedType, newNews.title!, newNews.description!, newNews.date!, newNews.image!);
             if (result.success) {
+                setLoading(false);
                 loadNews();  // Recargar la lista de PDFs
+                setNewNews({title:"", description: ""});
             } else {
                 alert(result.message);
             }
@@ -126,14 +134,13 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
     // useEffect(() => {
     //     console.log(newNews);
     // }, [newNews]);
-
-    if(loading){
-        return <div><p>Cargando...</p></div>;
-    }
-
     return(
         <div>
-            <h2 className="px-5 py-5 text-7xl">Noticias</h2>
+            {loading? (
+                <div><p>Cargando...</p></div>
+            ):(
+                <div>
+                    <h2 className="px-5 py-5 text-7xl">Noticias</h2>
             <button onClick={handleAddButtonClick} className="fixed bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
                     <span className="text-xl">+</span>
                 </button>
@@ -205,6 +212,9 @@ export const NewsPage = ({ page, component }: { page: string, component: string 
                 </div>
               </div>
             )}
+                </div>
+            )}
+            
         </div>
     );
 }
